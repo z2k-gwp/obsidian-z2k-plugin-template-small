@@ -1,17 +1,26 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
-import { appHasDailyNotesPluginLoaded, createDailyNote, getAllDailyNotes, getDailyNote, getDailyNoteSettings } from "obsidian-daily-notes-interface";
-import type { Moment } from "moment";
-
-
 // +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 // obsidian-z2k-template-small Obsidian Plugin
 // +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 //
-// Please see https://github.com/z2k-gwp/obsidian-z2k-template-small for more information
+// File: main.ts
+//    - This source file contains all of the TS code for the obsidian plugin
+//    - Please see https://github.com/z2k-gwp/obsidian-z2k-template-small for more information
 //
 //
 
+// ======================================================================================================
+// Imports
+// ======================================================================================================
+// 
+import type { Moment } from "moment";
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { appHasDailyNotesPluginLoaded, createDailyNote, getAllDailyNotes, getDailyNote, getDailyNoteSettings } from "obsidian-daily-notes-interface";
 
+
+// ======================================================================================================
+// Interfaces and Constants
+// ======================================================================================================
+// 
 interface IZ2KTemplateSmallSettings {
 	mySetting: string;
 	debugLevel: number;
@@ -19,12 +28,12 @@ interface IZ2KTemplateSmallSettings {
 	doMyMainJobOnStartup: boolean;
 }
 
-const DEFAULT_SETTINGS: IZ2KTemplateSmallSettings = {
+const DEFAULT_SETTINGS: IZ2KTemplateSmallSettings = Object.freeze({
 	mySetting: 'default',
 	debugLevel: 100,
 	useRibbonButton: true,
 	doMyMainJobOnStartup: false,
-}
+})
 
 
 
@@ -50,6 +59,9 @@ export default class Z2KTemplateSmallPlugin extends Plugin {
 
 		// Initialization
 		this.ribbonEl = null;
+
+		// Bind to updateSettings event 
+        this.updateSettings = this.updateSettings.bind(this);
 
 		// Load our settings first, as this controls what we do here.
 		await this.loadSettings();
@@ -187,12 +199,19 @@ export default class Z2KTemplateSmallPlugin extends Plugin {
 
 	}
 
+
+	// ======================================================================================================
+	// Managing Settings
+	// ======================================================================================================
+
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
-	async saveSettings() {
+	async updateSettings(val: IZ2KTemplateSmallSettings): Promise<void> {
+		this.settings = val;
 		await this.saveData(this.settings);
+		this.onSettingsUpdate();
 	}
 
 	private onSettingsUpdate(): void {
@@ -201,34 +220,24 @@ export default class Z2KTemplateSmallPlugin extends Plugin {
 	}
 
 
-
 	// ======================================================================================================
-	// Z2K Specific Functions
+	// Plugin Specific Functions
 	// ======================================================================================================
-	// Ideally, these function should be moved to one or more Z2K Helper classes so that they can be shared 
-	// across Z2K functions
 
 
 	/* ------------------------------------------------------------------------------------------------------ */
-	// createZ2KDailyLog
+	// MyMainJob
 	/* ------------------------------------------------------------------------------------------------------ */
 	/**
-	 * This function creates a daily note for the day. It uses the settings from the "Daily Notes" core 
-	 * plugin to figure out where to save it. 
+	 * This function performs the main work for the plugin. 
 	 * 
 	 * @remarks
-	 * - If the note already exists, it simply returns quietly, passing the file handle to the existing note.
-	 * 
-	 * @example // Tip: to call on today's note:
-	 *      const moment = (window as any).moment(Date.now());
-	 *      let dailyNote = createZ2KDailyNote(moment)
+	 * - This will need some fleshing.
 	 * 
 	 * @param  {Moment} dateToCreate - a Moment variable representing the day to create
 	 * @returns Promise - Filehandle to the actual note
 	 */
 	async MyMainJob(dateToCreate: Moment): Promise<Boolean> { 
-
-		let createdDailyNote = false;
 
 		// Sanity Checks
 		if (this.settings.debugLevel >= 100) { console.log(this.manifest.name + ": MyMainJob() - Entered"); }
@@ -267,7 +276,7 @@ class Z2KTemplateSmallSettingTab extends PluginSettingTab {
 			.setDisabled(this.plugin.settings.useRibbonButton)
 			.addToggle(cb => cb.onChange(value => {
                 this.plugin.settings.useRibbonButton = value;
-                this.plugin.saveSettings();				
+                this.plugin.updateSettings();				
 			}).setValue(this.plugin.settings.useRibbonButton))
 
 		new Setting(containerEl)
@@ -276,7 +285,7 @@ class Z2KTemplateSmallSettingTab extends PluginSettingTab {
 			.setDisabled(this.plugin.settings.doMyMainJobOnStartup)
 			.addToggle(cb => cb.onChange(value => {
                 this.plugin.settings.doMyMainJobOnStartup = value;
-                this.plugin.saveSettings();				
+                this.plugin.updateSettings();				
 			}).setValue(this.plugin.settings.doMyMainJobOnStartup))
 
 
@@ -288,7 +297,7 @@ class Z2KTemplateSmallSettingTab extends PluginSettingTab {
 			.setName("Debug Level (integer)")
 			.addText(cb => cb.onChange(value => {
 				this.plugin.settings.debugLevel = +value;
-				this.plugin.saveSettings();
+				this.plugin.updateSettings();
 			}).setValue(this.plugin.settings.debugLevel.toString()));
 
 	}
