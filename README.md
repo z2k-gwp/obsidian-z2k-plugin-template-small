@@ -1,9 +1,12 @@
-## Obsidian Z2K plugin - Template 
+## Obsidian Plugin Template for Small Projects
 
 ## Overview
 This [Obsidian](https//obsidian.md) code template is used to create small plugins. Small is defined as:
 - residing in one single file (main.ts)
-- needing only a couple of functions to pull it off. 
+- needing only a couple of functions to pull it off
+- heavily based off of the official sample plugin
+- uses esbuild for building and npm for library management
+- does NOT use lint 
 
 ## Details
 - It is assumed you are experienced enough with coding plugins that you've graduated to the next level from the [official Obsidian Sample Plugin](https://github.com/obsidianmd/obsidian-sample-plugin)
