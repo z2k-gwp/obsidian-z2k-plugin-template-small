@@ -61,7 +61,7 @@ export default class Z2KTemplateSmallPlugin extends Plugin {
 		this.ribbonEl = null;
 
 		// Bind to updateSettings event 
-        this.updateSettings = this.updateSettings.bind(this);
+        this.saveSettings = this.saveSettings.bind(this);
 
 		// Load our settings first, as this controls what we do here.
 		await this.loadSettings();
@@ -208,8 +208,8 @@ export default class Z2KTemplateSmallPlugin extends Plugin {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
-	async updateSettings(val: IZ2KTemplateSmallSettings): Promise<void> {
-		this.settings = val;
+	async saveSettings(): Promise<void> {
+		// Assumes caller has already updated the plugins setting values
 		await this.saveData(this.settings);
 		this.onSettingsUpdate();
 	}
@@ -276,7 +276,7 @@ class Z2KTemplateSmallSettingTab extends PluginSettingTab {
 			.setDisabled(this.plugin.settings.useRibbonButton)
 			.addToggle(cb => cb.onChange(value => {
                 this.plugin.settings.useRibbonButton = value;
-                this.plugin.updateSettings();				
+                this.plugin.saveSettings();				
 			}).setValue(this.plugin.settings.useRibbonButton))
 
 		new Setting(containerEl)
@@ -285,7 +285,7 @@ class Z2KTemplateSmallSettingTab extends PluginSettingTab {
 			.setDisabled(this.plugin.settings.doMyMainJobOnStartup)
 			.addToggle(cb => cb.onChange(value => {
                 this.plugin.settings.doMyMainJobOnStartup = value;
-                this.plugin.updateSettings();				
+                this.plugin.saveSettings();				
 			}).setValue(this.plugin.settings.doMyMainJobOnStartup))
 
 
@@ -297,7 +297,7 @@ class Z2KTemplateSmallSettingTab extends PluginSettingTab {
 			.setName("Debug Level (integer)")
 			.addText(cb => cb.onChange(value => {
 				this.plugin.settings.debugLevel = +value;
-				this.plugin.updateSettings();
+				this.plugin.saveSettings();
 			}).setValue(this.plugin.settings.debugLevel.toString()));
 
 	}
